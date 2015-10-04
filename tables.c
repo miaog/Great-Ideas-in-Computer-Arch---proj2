@@ -132,6 +132,7 @@ int add_to_table(SymbolTable* table, const char* name, uint32_t addr) {
     int i = 0;
     while (i < table->len - 1) {
       table->tbl[i] = copy[i];
+      i++;
     }
 
     /** Add the new symbol to the end of the array. **/
