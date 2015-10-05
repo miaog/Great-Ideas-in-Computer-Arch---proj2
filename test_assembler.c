@@ -91,10 +91,8 @@ void test_translate_num() {
 
 void test_table_1() {
     int retval;
-
     SymbolTable* tbl = create_table(SYMTBL_UNIQUE_NAME);
     CU_ASSERT_PTR_NOT_NULL(tbl);
-
     retval = add_to_table(tbl, "abc", 8);
     CU_ASSERT_EQUAL(retval, 0);
     retval = add_to_table(tbl, "efg", 12);
@@ -104,8 +102,7 @@ void test_table_1() {
     retval = add_to_table(tbl, "q45", 24); 
     CU_ASSERT_EQUAL(retval, -1); 
     retval = add_to_table(tbl, "bob", 14); 
-    CU_ASSERT_EQUAL(retval, -1); 
-
+    CU_ASSERT_EQUAL(retval, -1);
     retval = get_addr_for_symbol(tbl, "abc");
     CU_ASSERT_EQUAL(retval, 8); 
     retval = get_addr_for_symbol(tbl, "q45");
@@ -154,11 +151,68 @@ void test_table_2() {
 }
 
 /****************************************
- *  Add your test cases here
+ *  Test cases for translate.c 
  ****************************************/
 
+void test_write_pass_one() {
+
+    /** Tests different instructions with incorrect amount
+        of arguments. 
+    **/
+    CU_ASSERT_EQUAL(write_pass_one(NULL, "move", NULL, 0), 0);
+    CU_ASSERT_EQUAL(write_pass_one(NULL, "li", NULL, 1), 0);
+    CU_ASSERT_EQUAL(write_pass_one(NULL, "blt", NULL, 2), 0);
+    CU_ASSERT_EQUAL(write_pass_one(NULL, "rem", NULL, 4), 0);
+
+    /** Tests li with a number that cannot be represented
+        by 32 bits. 
+    **/
+    char *array[2];
+    array[1] = "4294967296";
+    CU_ASSERT_EQUAL(write_pass_one(NULL, "li", array, 2), 0);
+
+    array[1] = "-2147483649";
+    CU_ASSERT_EQUAL(write_pass_one(NULL, "li", array, 2), 0); 
+
+    /** Tests li with a number that can be represented 
+        by 32 bits.
+    **/
+    FILE *file0 = fopen("new_file0.txt", "w");
+    char *new_array0[2];
+    new_array0[0] = "$s0";
+    new_array0[1] = "432096";
+    CU_ASSERT_EQUAL(write_pass_one(file0, "li", new_array0, 2), 2);
+    fclose(file0);
+
+    /** Tests li with a number that can be represented 
+        by 32 bits AND is in the range between the lowest 
+        possible 16 bit signed number and the highest possible
+        16 bit signed number so it should use the addiu 
+        instuction and should return 1 because we are only
+        using 1 instruction.
+    **/
+    FILE *file1 = fopen("new_file1.txt", "w");
+    char *new_array1[2];
+    new_array1[0] = "$s0";
+    new_array1[1] = "100";
+    CU_ASSERT_EQUAL(write_pass_one(file1, "li", new_array1, 2), 1);
+    fclose(file1);
+
+    /** Tests to see if rem is performing successfully by 
+        adding two lines of instructions to the output.
+    **/
+    FILE *file = fopen("new_file.txt", "w");
+    char *new_array[3];
+    new_array[0] = "$v0";
+    new_array[1] = "$s0";
+    new_array[2] = "$s1";
+    CU_ASSERT_EQUAL(write_pass_one(file, "rem", new_array, 3), 2);
+    fclose(file);
+
+}
+
 int main(int argc, char** argv) {
-    CU_pSuite pSuite1 = NULL, pSuite2 = NULL;
+    CU_pSuite pSuite1 = NULL, pSuite2 = NULL, pSuite3 = NULL;
 
     if (CUE_SUCCESS != CU_initialize_registry()) {
         return CU_get_error();
@@ -187,6 +241,19 @@ int main(int argc, char** argv) {
     if (!CU_add_test(pSuite2, "test_table_2", test_table_2)) {
         goto exit;
     }
+
+    /* Suite 3 */
+    pSuite3 = CU_add_suite("Testing translate.c", NULL, NULL);
+    if (!pSuite3) {
+        goto exit;
+    }
+    if (!CU_add_test(pSuite3, "test_write_pass_one", test_write_pass_one)) {
+        goto exit;
+    }
+    
+    /**if (!CU_add_test(pSuite2, "test_table_2", test_table_2)) {
+        goto exit;
+    }**/
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

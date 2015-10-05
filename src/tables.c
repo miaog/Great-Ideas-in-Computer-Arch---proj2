@@ -44,13 +44,29 @@ void write_symbol(FILE* output, uint32_t addr, const char* name) {
    to store this value for use during add_to_table().
  */
 SymbolTable* create_table(int mode) {
-    /* YOUR CODE HERE */
-    return NULL;
+    SymbolTable *table = (SymbolTable *) malloc(INITIAL_SIZE * sizeof(SymbolTable));
+
+    if (table == NULL) {
+      allocation_failed();
+    }
+
+    /** Allocate memory for the array containing symbols. **/
+    table->tbl = (Symbol *) malloc(0);
+    if (table->tbl == NULL) {
+      allocation_failed();
+    }
+
+    table->len = 0;
+    table->cap = INITIAL_SIZE;
+    table->mode = mode;
+
+    return table;
 }
 
 /* Frees the given SymbolTable and all associated memory. */
 void free_table(SymbolTable* table) {
-    /* YOUR CODE HERE */
+    free(table->tbl);
+    free(table);
 }
 
 /* A suggested helper function for copying the contents of a string. */
@@ -79,15 +95,64 @@ static char* create_copy_of_str(const char* str) {
    Otherwise, you should store the symbol name and address and return 0.
  */
 int add_to_table(SymbolTable* table, const char* name, uint32_t addr) {
-    /* YOUR CODE HERE */
-    return -1;
+    if ((addr % 4) != 0) {
+      addr_alignment_incorrect();
+      return -1;
+    }
+
+    /** Creates a copy of NAME. **/
+    char *copy_of_str = create_copy_of_str(name);
+
+    /** Creates a copy of the symbols in TABLE. **/
+    Symbol copy[table->len];
+    int count;
+    for(count = 0; count < table->len; count++) {
+      Symbol current_symbol = table->tbl[count];
+
+      /** If the table's mode is SYMTBL_UNIQUE_NAME and NAME already exists. **/
+      int equal = strcmp(current_symbol.name, copy_of_str);
+      if (equal == 0 && table->mode == SYMTBL_UNIQUE_NAME) {
+        name_already_exists(copy_of_str);
+        return -1;
+      }
+
+      copy[count] = current_symbol;
+    }
+
+    /** Increase the size of the symbols array by 1 and
+        allocate more memeory to the array. **/
+    table->len = table->len + 1;
+    table->tbl = realloc(table->tbl, (table->len * sizeof(Symbol)));
+    if (table->tbl == NULL) {
+      allocation_failed();
+    }
+
+    /** Now that we have resized our symbols array, add all 
+        of the symbols back into the resized array. **/
+    int i = 0;
+    while (i < table->len - 1) {
+      table->tbl[i] = copy[i];
+      i++;
+    }
+
+    /** Add the new symbol to the end of the array. **/
+    Symbol new_symbol = {copy_of_str, addr};
+    table->tbl[table->len - 1] = new_symbol;
+
+    return 0;
 }
 
 /* Returns the address (byte offset) of the given symbol. If a symbol with name
    NAME is not present in TABLE, return -1.
  */
 int64_t get_addr_for_symbol(SymbolTable* table, const char* name) {
-    /* YOUR CODE HERE */ 
+    int count;
+    for (count = 0; count < table->len; count++) {
+      Symbol current_symbol = table->tbl[count];
+      if (strcmp(current_symbol.name, name) == 0) {
+        return current_symbol.addr;
+      }
+    }
     return -1;
 }
 
