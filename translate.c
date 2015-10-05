@@ -114,10 +114,10 @@ int translate_inst(FILE* output, const char* name, char** args, size_t num_args,
     else if (strcmp(name, "lbu") == 0)   return write_mem (0x24, output, args, num_args);
     else if (strcmp(name, "sb") == 0)    return write_mem (0x28, output, args, num_args);
     else if (strcmp(name, "sw") == 0)    return write_mem (0x2b, output, args, num_args);
-    else if (strcmp(name, "beq") == 0)    return write_branch(0x4, output, args, num_args, addr, symtbl);
-    else if (strcmp(name, "bne") == 0)    return write_branch(0x5, output, args, num_args, addr, symtbl);
-    else if (strcmp(name, "j") == 0)    return write_jump(0x2, output, args, num_args, addr, reltbl);
-    else if (strcmp(name, "jal") == 0)  return write_jump(0x03, output, args, num_args, addr, reltbl);
+    else if (strcmp(name, "beq") == 0)    return write_branch (0x4, output, args, num_args, addr, symtbl);
+    else if (strcmp(name, "bne") == 0)    return write_branch (0x5, output, args, num_args, addr, symtbl);
+    else if (strcmp(name, "j") == 0)    return write_jump (0x2, output, args, num_args, addr, reltbl);
+    else if (strcmp(name, "jal") == 0)  return write_jump (0x03, output, args, num_args, addr, reltbl);
     else                                 return -1;
 }
 
@@ -136,7 +136,7 @@ int write_rtype(uint8_t funct, FILE* output, char** args, size_t num_args) {
     int rd = translate_reg(args[0]);
     int rs = translate_reg(args[1]);
     int rt = translate_reg(args[2]);
-    if (rs == -1 || rd == -1 || rt == -1) {
+    if ((rs == -1 )|| (rd == -1) || (rt == -1)) {
       return -1;
     }
     uint32_t instruction;
@@ -166,7 +166,7 @@ int write_shift(uint8_t funct, FILE* output, char** args, size_t num_args) {
     int rd = translate_reg(args[0]);
     int rt = translate_reg(args[1]);
     int err = translate_num(&s, args[2], 0, 31);
-    if (rd == -1 || rt == -1 || err == -1) {
+    if ((rd == -1) || (rt == -1) || err == -1) {
       return -1;
     }
     uint32_t instruction;
@@ -210,7 +210,7 @@ int write_addiu(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     uint32_t instruction;
     int rs = translate_reg(args[0]);
     int rt = translate_reg(args[1]);
-    if (rs == -1 || rt == -1) {
+    if ((rs == -1 )|| (rt == -1)) {
       return -1;
     }
     long int i;
@@ -234,7 +234,7 @@ int write_ori(uint8_t opcode, FILE* output, char** args, size_t num_args) {
     uint32_t instruction;
     int rt = translate_reg(args[0]);
     int rs = translate_reg(args[1]);
-    if (rs == -1 || rt == -1) {
+    if ((rs == -1 )|| (rt == -1)) {
       return -1;
     }
     long int i;
@@ -312,7 +312,7 @@ int write_branch(uint8_t opcode, FILE* output, char** args, size_t num_args, uin
     }
     int rs = translate_reg(args[0]);
     int rt = translate_reg(args[1]);
-    if (rt == -1 || rs == -1) {
+    if ((rt == -1) || (rs == -1)) {
       return -1;
     }
     int label_addr = get_addr_for_symbol(symtbl, args[2]);
