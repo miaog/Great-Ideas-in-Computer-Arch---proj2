@@ -45,32 +45,85 @@ const int TWO_POW_SEVENTEEN = 131072;    // 2^17
  */
 unsigned write_pass_one(FILE* output, const char* name, char** args, int num_args) {
     if (strcmp(name, "li") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 2) {
+          long int new_imm;
+          long int lowest_signed_number = -2147483648;
+          long int highest_unsigned_number = 4294967295;
+          int success = translate_num(&new_imm, args[1], lowest_signed_number, highest_unsigned_number);
+          if (success == 0) {
+            long int lowest_signed_16bit_number = -32768;
+            long int highest_signed_16bit_number = 32767;
+            if (new_imm >= lowest_signed_16bit_number && new_imm <= highest_signed_16bit_number) {
+              fprintf(output, "addiu %s $zero %ld\n", args[0], new_imm);
+              return 1;
+            } else {
+              long int upper_bits = (new_imm >> 16);
+              long int highest_unsigned_16bit_number = 65535;
+              long int lower_bits = (new_imm & highest_unsigned_16bit_number);
+              fprintf(output, "lui $at %ld\n", upper_bits);
+              fprintf(output, "ori %s $at %ld\n", args[0], lower_bits);
+              return 2;
+            }
+          }
+          return 0;
+        }
         return 0;  
     } else if (strcmp(name, "move") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 2) {
+          fprintf(output, "add %s %s $zero\n", args[0], args[1]);
+          return 1;
+        }
         return 0;  
     } else if (strcmp(name, "blt") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 3) {
+          fprintf(output, "slt $at %s %s\n", args[0], args[1]);
+          fprintf(output, "bne $at $zero %s\n", args[2]);
+          return 2;
+        }
         return 0;  
     } else if (strcmp(name, "bgt") == 0) {
-        /* YOUR CODE HERE */
-        return 0;  
+        if (num_args == 3) {
+          fprintf(output, "slt $at %s %s\n", args[1], args[0]);
+          fprintf(output, "bne $at $zero %s\n", args[2]);
+          return 2;
+        }
+        return 0; 
     } else if (strcmp(name, "traddu") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 3) {
+          fprintf(output, "addu $at %s %s\n", args[1], args[2]);
+          fprintf(output, "addu %s %s $at\n", args[0], args[0]);
+          return 2;
+        }
         return 0;       
     } else if (strcmp(name, "swpr") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 2) {
+          fprintf(output, "add $at $zero %s\n", args[1]);
+          fprintf(output, "add %s %s $zero\n", args[1], args[0]);
+          fprintf(output, "add %s $at $zero\n", args[0]);
+          return 3;
+        }
         return 0;       
     } else if (strcmp(name, "mul") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 3) {
+          fprintf(output, "mult %s %s \n", args[1], args[2]);
+          fprintf(output, "mflo %s\n", args[0]);
+          return 2;
+        }
         return 0;       
     } else if (strcmp(name, "div") == 0) {
-        /* YOUR CODE HERE */
+        if (num_args == 3) {
+          fprintf(output, "div %s %s \n", args[1], args[2]);
+          fprintf(output, "mflo %s\n", args[0]);
+          return 2;
+        }
         return 0;       
     } else if (strcmp(name, "rem") == 0) {
-        /* YOUR CODE HERE */
-        return 0;       
+        if (num_args == 3) {
+          fprintf(output, "div %s %s \n", args[1], args[2]);
+          fprintf(output, "mfhi %s\n", args[0]);
+          return 2;
+        }
+        return 0;      
     } 
     write_inst_string(output, name, args, num_args);
     return 1;
