@@ -148,7 +148,7 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
         // Ignore comments
         skip_comment(buf);
 
-        int toWrite = 0;
+        // int toWrite = 0;
 
         char* token = strtok(buf, IGNORE_CHARS);
         //make sure buff is not empty and token is not NULL
@@ -163,7 +163,7 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
             //if token is not a label
             if (a == 0) {
                 //parse the instruction arguments
-                int j = parse_args(input_line, args, num_args);
+                int j = parse_args(input_line, args, &num_args);
                 if (j == -1) {
                     ret_code = -1;
                 }
@@ -172,7 +172,6 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
                 if (lines_written == 0) {
                     raise_inst_error(input_line, token, args, num_args);
                     ret_code = -1;
-                    toWrite = 1;
                 } 
                 byte_offset += lines_written * 4;
             }
@@ -214,7 +213,7 @@ int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl
         if (token == NULL) {
             continue;
         }
-        int j = parse_args(input_line, args, num_args);
+        int j = parse_args(input_line, args, &num_args);
             if (j == -1) {
                 error = -1;
             }
