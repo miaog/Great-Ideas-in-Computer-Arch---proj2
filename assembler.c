@@ -140,9 +140,8 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
     char buf[BUF_SIZE];
     uint32_t input_line = 0, byte_offset = 0;
     int ret_code = 0; 
-    int error = 0;
 
-     // Read lines and add to instructions
+    // Read lines and add to instructions
     while (fgets(buf, sizeof(buf), input) ) {
         input_line++;
 
@@ -159,17 +158,11 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
             char* args[MAX_ARGS + 1];
             int num_args = 0;
 
-            // add token to the symbol table
+            // add token to the symbol table if it is a label
             int a = add_if_label(input_line, token, byte_offset, symtbl);
             //if token is not a label
             if (a == 0) {
                 //parse the instruction arguments
-                while (token != NULL) {
-                    char *a = iline;
-                    args[num_args] = a;
-                    token = strtok(buf, IGNORE_CHARS);
-                    num_args++;
-                }
                 int j = parse_args(input_line, args, num_args);
                 if (j == -1) {
                     ret_code = -1;
@@ -179,6 +172,7 @@ int pass_one(FILE* input, FILE* output, SymbolTable* symtbl) {
                 if (lines_written == 0) {
                     raise_inst_error(input_line, token, args, num_args);
                     ret_code = -1;
+                    toWrite = 1;
                 } 
                 byte_offset += lines_written * 4;
             }
@@ -216,23 +210,17 @@ int pass_two(FILE *input, FILE* output, SymbolTable* symtbl, SymbolTable* reltbl
     int num_args = 0;
 
     while (fgets(buf, sizeof(buf), input)) {
-        char* iline = strtok(buf, IGNORE_CHARS);
-        if (iline == NULL) {
+        char *token = strtok(buf, IGNORE_CHARS);
+        if (token == NULL) {
             continue;
-        }
-        while (iline != NULL) {
-            char *a = iline;
-            args[num_args] = a;
-            iline = strtok(buf, IGNORE_CHARS);
-            num_args++;
         }
         int j = parse_args(input_line, args, num_args);
             if (j == -1) {
                 error = -1;
             }
-        int inst = translate_inst(output, name, args, num_args, input_line * 4, symtbl, reltbl);
+        int inst = translate_inst(output, token, args, num_args, input_line * 4, symtbl, reltbl);
         if (inst == -1) {
-            raise_inst_error(input_line + 1, name, args, num_args);
+            raise_inst_error(input_line, token, args, num_args);
             error = -1;
         }
         input_line++;
