@@ -76,9 +76,40 @@ relocate:
 #
 # Returns: the relocated instruction, or -1 if error
 #------------------------------------------------------------------------------
-relocate_inst:
-        # YOUR CODE HERE
-        jr $ra
+relocate_inst:  
+                addiu $sp, $sp, -20
+                sw $ra, 0($sp)
+                sw $a0, 4($sp)
+                sw $a1, 8($sp)
+                sw $a2, 12($sp)
+                sw $a3, 16($sp)
+
+                move $s2, $a0
+                move $a0, $a3
+                jal symbol_for_addr #find instruction name
+
+                beq $v0, $0, err
+                addiu $a1, $v0, 0
+                move $a0, $a2 
+                jal addr_for_symbol #get address for instruction
+
+                subiu $s1, $0, 1
+                beq $v0, $s1, err
+                srl $v0, $v0, 2
+                andi $s2, $s2, 0xfc000000
+                or $v0, $v0, $s2
+                j epilogue
+err:            
+                subiu $v0, $0, 1
+                j epilogue 
+epilogue:       
+                lw $a3, 16($sp)
+                lw $a2, 12($sp)
+                lw $a1, 8($sp)
+                lw $a0, 4($sp)
+                lw $ra, 0($sp)
+                addiu $sp, $sp, 20
+                jr $ra
 
 ###############################################################################
 #                 DO NOT MODIFY ANYTHING BELOW THIS POINT                       
