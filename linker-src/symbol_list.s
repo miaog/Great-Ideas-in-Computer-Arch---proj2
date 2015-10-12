@@ -48,8 +48,37 @@
 # Returns:  address of symbol if found or -1 if not found
 #------------------------------------------------------------------------------
 addr_for_symbol:
-        # YOUR CODE HERE
-        jr $ra
+	addiu $sp, $sp, -12
+	sw $s1, 8($sp)
+	sw $s0, 4($sp)
+	sw $ra, 0($sp)
+	add $s0, $a0, $0
+        add $s1, $a1, $0	#LOOK HERE
+        beq $a0, $0, Failed 	#null case
+        
+Loop:
+        beq $s0, $0, Failed
+        lw $a0, 0($s0)
+        jal streq
+        add $a1, $s1, $0
+        beq $v0, $0, Found
+        lw $s0, 8($s0)
+        j Loop
+        
+Found:	
+	lw $v0, 4($s0)
+	lw $s1, 8($sp)
+	lw $s0, 4($sp)
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 12
+	jr $ra
+Failed:	
+	li $v0, -1
+	lw $s1, 8($sp)
+	lw $s0, 4($sp)
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 12
+	jr $ra
         
 #------------------------------------------------------------------------------
 # function add_to_list()
@@ -69,8 +98,39 @@ addr_for_symbol:
 #
 # Returns: the new list
 #------------------------------------------------------------------------------
-add_to_list:    
-        # YOUR CODE HERE
+add_to_list: 
+	addiu $sp, $sp, -24
+	sw $s4, 20($sp)
+	sw $s3, 16($sp)
+	sw $s2, 12($sp)
+	sw $s1, 8($sp)
+	sw $s0, 4($sp)
+	sw $ra, 0($sp) 
+	add $s2, $a0, $0 # Store the pointer to the list in $s2
+	add $s3, $a1, $0 # Store the pointer to the name in $s3
+	add $s4, $a2, $0 # Store the address of the symbol in $s4
+	
+        jal new_node
+        add $s0, $v0, $0 # Store new node object in $s0
+        
+        add $a0, $s3, $0 # Set the first argument to be the pointer to the name
+        jal copy_of_str
+        add $s1, $v0, $0 # Store the new string in $s1
+        
+        sw $s1, 0($s0) # Store the new string to the new node
+        sw $s4, 4($s0) # Store the address of the symbol to the new node
+        sw $s2, 8($s0) # Store next node to be the pointer to list
+        
+        add $v0, $s0, $0 # Return the new list
+        
+        lw $s4, 20($sp)
+	lw $s3, 16($sp)
+	lw $s2, 12($sp)
+	lw $s1, 8($sp)
+	lw $s0, 4($sp)
+	lw $ra, 0($sp)
+	addiu $sp, $sp, 24 
+exit:	
         jr $ra
 
 ###############################################################################
@@ -96,7 +156,7 @@ symbol_for_addr:
         lw $a0, 8($a0)
         j symbol_for_addr
 symbol_found:
-        lw $v0, 4($a0)
+        lw $v0, 0($a0)
         jr $ra
 symbol_not_found:
         li $v0, 0
