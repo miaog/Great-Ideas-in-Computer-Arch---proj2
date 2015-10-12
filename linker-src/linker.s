@@ -48,12 +48,15 @@ hex_buffer:		.space 10
 write_machine_code:
 	# You may need to save additional items onto the stack. Feel free to
 	# change this part.
-	addiu $sp, $sp, -24
-	sw $s0, 20($sp)
-	sw $s1, 16($sp)
-	sw $s2, 12($sp)
-	sw $s3, 8($sp)
-	sw $s4, 4($sp)
+	addiu $sp, $sp, -36
+	sw $s0, 32($sp)
+	sw $s1, 28($sp)
+	sw $s2, 24($sp)
+	sw $s3, 20($sp)
+	sw $s4, 16($sp)
+	sw $s5, 12($sp)
+	sw $s6, 8($sp)
+	sw $s7, 4($sp)
 	sw $ra, 0($sp)
 	# We'll save the arguments since we are making function calls.
 	move $s0, $a0			# $s0 = output file ptr
@@ -76,11 +79,12 @@ write_machine_code_find_text:
 	
 	# 1. Initialize the byte offset to zero. We will need this for any instructions
 	# that require relocation:
-	# YOUR_INSTRUCTIONS_HERE
+	addi $s6, $0, 0
 
 write_machine_code_next_inst:
 	# 2. Call readline() while passing in the correct arguments:
-	# YOUR_INSTRUCTIONS_HERE
+	addi $a0, $s1, 0
+	jal readline
 
 	# Check whether readline() returned an error.
 	blt $v0, $0, write_machine_code_error
@@ -92,22 +96,37 @@ write_machine_code_next_inst:
 	
 	# 3. Looks like there is another instruction. Call parse_int() with base=16
 	# to convert the instruction into a number, and store it into a register:
-	# YOUR_INSTRUCTIONS_HERE
+	addi $a1, $0, 16
+	addi $a0, $v1, 0
+	jal parse_int
+	addi $s5, $v0, 0
 	
 	# 4. Check if the instruction needs relocation. If it does not, branch to
 	# the label write_machine_code_to_file:
-	# YOUR_INSTRUCTIONS_HERE
+	addi $a0, $s5, 0
+	jal inst_needs_relocation
+	beq $v0, $0, write_machine_code_to_file
 	
 	# 5. Here we handle relocation. Call relocate_inst() with the appropriate
 	# arguments, and store the relocated instruction in the appropriate register:
-	# YOUR_INSTRUCTIONS_HERE
+	addi $a0, $s5, 0
+	addi $a1, $s6, 0
+	addi $a2, $s2, 0
+	addi $a3, $s3, 0
+	jal relocate_inst
+	addi $s5, $v0, 0
+	addi $s7, $0, -1
+	beq $s5, $s7, write_machine_code_error
+	
 
 write_machine_code_to_file:
 	# 6. Write the instruction into a string buffer via hex_to_str():
-	# YOUR_INSTRUCTIONS_HERE 
+	addi $a0, $s5, 0
+	la $a1, hex_buffer
+	jal hex_to_str 
 	
 	# 7. Increment the byte offset by the appropriate amount:
-	# YOUR_INSTRUCTIONS_HERE
+	addi $s6, $s6, 4
 
 	# Here, we use the write to file syscall. WE specify the output file as $a0.
 	move $a0, $s0
@@ -126,13 +145,16 @@ write_machine_code_error:
 	li $v0, -1
 write_machine_code_end:
 	# Don't forget to change this part if you saved more items onto the stack!
-	lw $s0, 20($sp)
-	lw $s1, 16($sp)
-	lw $s2, 12($sp)
-	lw $s3, 8($sp)
-	lw $s4, 4($sp)
+	lw $s0, 32($sp)
+	lw $s1, 28($sp)
+	lw $s2, 24($sp)
+	lw $s3, 20($sp)
+	lw $s4, 16($sp)
+	lw $s5, 12($sp)
+	lw $s6, 8($sp)
+	lw $s7, 4($sp)
 	lw $ra, 0($sp)
-	addiu $sp, $sp, 24
+	addiu $sp, $sp, 36
 	jr $ra
 
 ###############################################################################
