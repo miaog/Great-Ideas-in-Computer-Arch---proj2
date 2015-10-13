@@ -28,17 +28,20 @@ tab:	.asciiz "\t"
 #------------------------------------------------------------------------------
 strlen:
 	addiu $t0, $0, 0 #counter
+	beq $a0, $0, stop
+	j str_loop
 
 str_loop:
 	lb $t1, 0($a0)
-	beq $t1, $0, str_exit
+	beq $t1, $0, stop
 	addiu $t0, $t0, 1 #increment counter
 	addiu $a0, $a0, 1
 	j str_loop
 
-str_exit:
+stop:
 	addiu $v0, $t0, 0
 	jr $ra
+
 
 #------------------------------------------------------------------------------
 # function strncpy()
