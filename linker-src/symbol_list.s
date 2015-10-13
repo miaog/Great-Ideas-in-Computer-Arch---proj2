@@ -48,13 +48,13 @@
 # Returns:  address of symbol if found or -1 if not found
 #------------------------------------------------------------------------------
 addr_for_symbol:
-	addiu $sp, $sp, -12
-	sw $s1, 8($sp)
-	sw $s0, 4($sp)
-	sw $ra, 0($sp)
-	add $s0, $a0, $0
-        add $s1, $a1, $0	#LOOK HERE
-        beq $a0, $0, Failed 	#null case
+        addiu $sp, $sp, -12
+        sw $s1, 8($sp)
+        sw $s0, 4($sp)
+        sw $ra, 0($sp)
+        add $s0, $a0, $0
+        add $s1, $a1, $0        #LOOK HERE
+        beq $a0, $0, Failed     #null case
         
 Loop:
         beq $s0, $0, Failed
@@ -65,20 +65,20 @@ Loop:
         lw $s0, 8($s0)
         j Loop
         
-Found:	
-	lw $v0, 4($s0)
-	lw $s1, 8($sp)
-	lw $s0, 4($sp)
-	lw $ra, 0($sp)
-	addiu $sp, $sp, 12
-	jr $ra
-Failed:	
-	li $v0, -1
-	lw $s1, 8($sp)
-	lw $s0, 4($sp)
-	lw $ra, 0($sp)
-	addiu $sp, $sp, 12
-	jr $ra
+Found:  
+        lw $v0, 4($s0)
+        lw $s1, 8($sp)
+        lw $s0, 4($sp)
+        lw $ra, 0($sp)
+        addiu $sp, $sp, 12
+        jr $ra
+Failed: 
+        li $v0, -1
+        lw $s1, 8($sp)
+        lw $s0, 4($sp)
+        lw $ra, 0($sp)
+        addiu $sp, $sp, 12
+        jr $ra
         
 #------------------------------------------------------------------------------
 # function add_to_list()
@@ -99,17 +99,17 @@ Failed:
 # Returns: the new list
 #------------------------------------------------------------------------------
 add_to_list: 
-	addiu $sp, $sp, -24
-	sw $s4, 20($sp)
-	sw $s3, 16($sp)
-	sw $s2, 12($sp)
-	sw $s1, 8($sp)
-	sw $s0, 4($sp)
-	sw $ra, 0($sp) 
-	add $s2, $a0, $0 # Store the pointer to the list in $s2
-	add $s3, $a1, $0 # Store the pointer to the name in $s3
-	add $s4, $a2, $0 # Store the address of the symbol in $s4
-	
+        addiu $sp, $sp, -24
+        sw $s4, 20($sp)
+        sw $s3, 16($sp)
+        sw $s2, 12($sp)
+        sw $s1, 8($sp)
+        sw $s0, 4($sp)
+        sw $ra, 0($sp) 
+        add $s2, $a0, $0 # Store the pointer to the list in $s2
+        add $s3, $a1, $0 # Store the pointer to the name in $s3
+        add $s4, $a2, $0 # Store the address of the symbol in $s4
+        
         jal new_node
         add $s0, $v0, $0 # Store new node object in $s0
         
@@ -124,13 +124,13 @@ add_to_list:
         add $v0, $s0, $0 # Return the new list
         
         lw $s4, 20($sp)
-	lw $s3, 16($sp)
-	lw $s2, 12($sp)
-	lw $s1, 8($sp)
-	lw $s0, 4($sp)
-	lw $ra, 0($sp)
-	addiu $sp, $sp, 24 
-exit:	
+        lw $s3, 16($sp)
+        lw $s2, 12($sp)
+        lw $s1, 8($sp)
+        lw $s0, 4($sp)
+        lw $ra, 0($sp)
+        addiu $sp, $sp, 24 
+exit:   
         jr $ra
 
 ###############################################################################
