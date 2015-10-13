@@ -79,34 +79,39 @@ relocate:
 relocate_inst:  
                 addiu $sp, $sp, -20
                 sw $ra, 0($sp)
-                sw $a0, 4($sp)
-                sw $a1, 8($sp)
-                sw $a2, 12($sp)
-                sw $a3, 16($sp)
+                sw $s0, 4($sp)
+                sw $s1, 8($sp)
+                sw $s2, 12($sp)
+                sw $s3, 16($sp)
 
-                move $s2, $a0
-                move $a0, $a3
+                move $s0, $a0
+                move $s1, $a1
+                move $s2, $a2
+                move $s3, $a3
+
+                move $t2, $s0
+                move $a0, $s3
                 jal symbol_for_addr #find instruction name
 
                 beq $v0, $0, err
                 addiu $a1, $v0, 0
-                move $a0, $a2 
+                move $a0, $s2 
                 jal addr_for_symbol #get address for instruction
 
-                subiu $s1, $0, 1
-                beq $v0, $s1, err
+                subiu $t1, $0, 1
+                beq $v0, $t1, err
                 srl $v0, $v0, 2
-                andi $s2, $s2, 0xfc000000
-                or $v0, $v0, $s2
+                andi $t2, $t2, 0xfc000000
+                or $v0, $v0, $t2
                 j epilogue
 err:            
                 subiu $v0, $0, 1
                 j epilogue 
 epilogue:       
-                lw $a3, 16($sp)
-                lw $a2, 12($sp)
-                lw $a1, 8($sp)
-                lw $a0, 4($sp)
+                lw $s3, 16($sp)
+                lw $s2, 12($sp)
+                lw $s1, 8($sp)
+                lw $s0, 4($sp)
                 lw $ra, 0($sp)
                 addiu $sp, $sp, 20
                 jr $ra
@@ -195,9 +200,9 @@ atsl_next:
         
         move $a0, $v1
         jal tokenize
-        move $a0, $s1           # $a0 = symbol list
-        addu $a1, $s2, $v0              # $a1 = symbol offset (bytes)
-        move $a2, $v1           # $a2 = symbol name (string)
+        move $a0, $s1           # $a0 = symbol list             
+        move $a1, $v1           # $a1 = symbol name (string)
+        addu $a2, $s2, $v0      # $a2 = symbol offset (bytes)
         jal add_to_list
         move $s1, $v0
         beq $s3, $0, atsl_done
