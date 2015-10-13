@@ -29,6 +29,7 @@ tab:	.asciiz "\t"
 strlen:
 	addiu $t0, $0, 0 #counter
 	beq $a0, $0, stop
+	j str_loop
 
 str_loop:
 	lb $t1, 0($a0)
