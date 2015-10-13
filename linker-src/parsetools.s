@@ -61,7 +61,7 @@ hex_loop:
 	srl $a0, $a0, 4 #next 4 bits
 	subi $t4, $a1, 1 #next char
 	bne $t1, 0, hex_loop
-	j exit
+	j hexit
 
 less:
 	addiu $t2, $t2, 48 #add 48 if less than 10
@@ -71,7 +71,7 @@ less:
 	subi $t4, $a1, 1 #next char
 	bne $t1, 0, hex_loop
 
-exit:
+hexit:
 	lw $ra, 0($sp)
 	lw $a0, 4($sp)
 	addiu $sp, $sp, 8
